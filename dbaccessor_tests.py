@@ -1,4 +1,5 @@
 #dbaccessor_tests.py
+#version 1.0
 
 #--------------  make sql command statements -------
 def t_mkselect(cls, table, columns):
