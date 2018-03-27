@@ -19,11 +19,15 @@
 #version 2.2
 #changes
 # 1. add try_execute to remove redundant testing code
+#start using git
 
 
 import os
 import sqlite3
 
+
+class DbAccessorError(Exception):
+  pass
 
 
 class DbAccessor(object):
@@ -221,6 +225,8 @@ class DbAccessor(object):
 
   @staticmethod
   def mkselect(table, columns=None, where_row=None, sort_cols=None):
+
+
       stmt = 'SELECT '
       if columns:
           stmt += ', '.join(columns)
@@ -248,8 +254,15 @@ class DbAccessor(object):
       # order clause
       # sort_cols = [('name_last', 'ASC'), ('age', 'DESC')]
       if sort_cols:
-          stmt += "\nORDER BY "
-          stmt += ', '.join([col[0] + ' ' + col[1] for col in sort_cols])
+        sort_list = []
+        for col_name, sort_type in sort_cols: 
+          if not sort_type.upper() in ['ASC', 'DESC']:
+            raise DbAccessorError('bad sort type')
+          else:
+            sort_list.append(col_name + ' ' + sort_type)
+
+        stmt += "\nORDER BY "
+        stmt += ', '.join(sort_list)
 
       stmt += ';'
 
@@ -280,9 +293,9 @@ class DbAccessor(object):
     '''
 
 
-    #To Do error checks: 
-    # 1. the sort columns should be in columns from field_names in dbschema
-    # 2. the sort_columns order should be either 'ASC' or 'DESC'
+    #Possible error checks: 
+    # 1. check to see if sort column names are in 
+    #    the field names for the table in the database
 
     if not columns: columns = self.get_field_names(table)
 
@@ -377,12 +390,12 @@ if __name__ == '__main__':
 
     #---------- Data Definition Method tests  ----------------------
 
-    test_data_definitions(db, table)
+    #test_data_definitions(db, table)
 
 
     #-----------  Data Manipulation Tests --------------------
 
-    #test_data_manipulation(db, table)
+    test_data_manipulation(db, table)
 
 
     db.close()
