@@ -80,10 +80,21 @@ class DbAccessor(object):
     if params == None: params=[]
 
     try:
+      
       with self.conn:
         result = execute(stmt, params)
+
     except sqlite3.OperationalError as error:
       print("execute sqlite OperationalError: ", error)
+      raise
+    except sqlite3.DatabaseError as error:
+      print("execute sqlite DatabaseError: ", error)
+      raise
+    except sqlite3.IntegrityError as error:
+      print("execute sqlite IntegrityError: ", error)
+      raise
+    except sqlite3.ProgrammingError as error:
+      print("execute sqlite ProgrammingError: ", error)
       raise
     except sqlite3.Error as error:
       print("execute sqlite Error: ", error)
@@ -109,8 +120,7 @@ class DbAccessor(object):
 
 
   def get_field_names(self, table_name):
-    cur = self.conn.cursor()
-    cur.execute("select * from %s limit 1" % table_name)
+    cur = self.execute("select * from %s limit 1" % table_name)
     field_names = [desc[0] for desc in cur.description]
     cur.close()
     return(field_names)
@@ -390,12 +400,12 @@ if __name__ == '__main__':
 
     #---------- Data Definition Method tests  ----------------------
 
-    #test_data_definitions(db, table)
+    test_data_definitions(db, table)
 
 
     #-----------  Data Manipulation Tests --------------------
 
-    test_data_manipulation(db, table)
+    #test_data_manipulation(db, table)
 
 
     db.close()
