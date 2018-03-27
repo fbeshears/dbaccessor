@@ -110,9 +110,30 @@ def t_read_insert(db, table):
 
 
   print ("\n---------  table where industry='technology' -------------\n")
-  results = db.read(table, where_row={'industry':'technology'})
+  results = db.read(table, 
+    where_row={'industry':'technology'}, 
+    sort_cols=[('industry', 'DESC'), ('ticker', 'ASC')])
 
   for row in results: print(row)
+
+  print ("\n---------  sorted table  -------------\n")
+
+  results = db.read(table, sort_cols=[('industry', 'DESC'), ('ticker', 'ASC')])
+
+  for row in results: print(row)
+
+
+  print ("\n---------  table with error  -------------\n")
+
+  try:
+    results = db.read(table, sort_cols=[('industry', 'what')])
+
+  except Exception as e:
+    print('Exception error: %s' % e)
+    print("raised error and caught it")
+    print("continuing without crashing")
+
+
 
   print("\n===========  t_read_insert end ==========\n\n")
 
