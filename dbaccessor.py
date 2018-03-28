@@ -1,25 +1,5 @@
 #dbaccessor.py
-#version 1.0
-#version 1.1    add update, delete
-#------------------------------------
 
-#version 2.0
-#changes
-# 1. move test funtions to separate module (data_accessor_tests.py)
-# 2. pass DbAccessor to t_mkupdate
-# 3. add t_mkselect test
-# 4. add data definition test to data_accessor_tests.py
-# 5. move data definition methods to DbAccessor
-# 6. change __init__ so it can handle whether new_db_ok or not
-#---------------------------------
-#version 2.1
-#changes
-# 1. change execute_commit methods to create cursor (cur) on the fly
-#--------------------------------
-#version 2.2
-#changes
-# 1. add try_execute to remove redundant testing code
-#start using git
 
 
 import os
