@@ -269,11 +269,11 @@ def main():
 
   #----------  Make stmt tests -------------------
 
-  #test_mk_sql_stmts(db, table)
+  test_mk_sql_stmts(db, table)
 
   #---------- Data Definition Method tests  ----------------------
 
-  #test_data_definitions(db, table)
+  test_data_definitions(db, table)
 
 
   #----------- DbValidator object tests ----------------------
@@ -283,7 +283,7 @@ def main():
 
   #-----------  Data Manipulation Tests --------------------
 
-  #test_data_manipulation(db, table)
+  test_data_manipulation(db, table)
 
 
   db.close()
