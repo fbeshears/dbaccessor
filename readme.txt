@@ -1,29 +1,19 @@
-dbaccessor_readme.txt
+#dbaccessor_readme.txt
 
-#A simple sqlite3 accessor class in python
+#A simple sqlite3 database accessor class in python
 
-#If you're using python to create and update a sqlite3 database 
-#then you may want to check out the DbAccessor class.
+
 
 #----------------------------
-
-#To see the tests brinng up the file dbaccessor_tests.py in your editor
-
-#To run tests, check out dbaccessor_tests.py
-
-
-
 #Tests can be run with:
 
 $ python dbaccessor_tests.py
 
 
 #-------------------------------------
-
 #To import the dbaccessor class use this
 
 from dbaccessor import DbAccessor 
-
 
 
 
