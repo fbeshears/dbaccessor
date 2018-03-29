@@ -200,10 +200,9 @@ class DbAccessor(object):
       stmt += "\nWHERE "
       stmt += "\n  AND ".join([col + "=:" + col for col in where_row.keys()])
       stmt += ';'
-    # else:
-    #   where_row = {}
   
     return(stmt)
+
 
   def delete(self, table, where_row=None):
     stmt = DbAccessor.mkdelete(table, where_row)
