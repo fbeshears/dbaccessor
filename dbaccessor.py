@@ -1,7 +1,10 @@
 #dbaccessor.py
 
+import json
 import os
 import sqlite3
+
+
 
 
 class DbAccessorError(Exception):
@@ -32,7 +35,17 @@ class DbSchemaValidator(object):
     if not self.is_table(table_name):
       raise DbSchemaValidatorError("table %s is not in dbschema." % table_name)  
 
-    return field_name in self.dbschema[table_name] 
+    field_names = [fnt[0] for fnt in self.dbschema[table_name]]
+    return field_name in field_names 
+
+  def get_dbschema_json_str(self):
+    return json.dumps(self.dbschema, indent=4,sort_keys=True)
+
+  def display_dbschema(self):
+    print(self.get_dbschema_json_str())
+
+
+
 
 
 
@@ -118,7 +131,7 @@ class DbAccessor(object):
 
   def get_table_names(self):
     rows = self.execute("select name from sqlite_master where type = 'table' ")
-    return [row[0] for row in rows]
+    return [row[0] for row in rows if row[0] != 'sqlite_sequence']
 
 
   def get_index_names(self):
@@ -127,16 +140,32 @@ class DbAccessor(object):
 
 
   def get_field_names(self, table_name):
-    cur = self.execute("select * from %s limit 1" % table_name)
+    cur = self.execute("select * from %s limit 0" % table_name)
     field_names = [desc[0] for desc in cur.description]
     cur.close()
     return(field_names)
+
+  def get_field_name_type_list(self, table_name):
+    '''
+    returns a field name type list, with the form [(<field_name>,<field_type>), ...]
+    Note that <field_type> just has the type information (e.g. 'integer').
+    It does not have all the information on the field. So, for the 'id'
+    field, it will NOT have 'integer primary key autoincrement not null'
+    even though that may have been how the field was initially declared.
+    Instead, if the id field is an integer, the tuple would be
+    (u'id', u'integer')
+    '''
+
+    cur = self.execute("PRAGMA table_info(%s)" % table_name)
+    field_name_type_list = [(row[1], row[2]) for row in cur]
+    cur.close()
+    return field_name_type_list
 
 
   def get_dbschema(self):
     dbschema = {}
     for tn in self.get_table_names(): 
-      dbschema[tn] = self.get_field_names(tn)
+      dbschema[tn] = self.get_field_name_type_list(tn)
     return(dbschema) 
 
 
@@ -144,16 +173,29 @@ class DbAccessor(object):
     dbschema = self.get_dbschema() 
     return DbSchemaValidator(dbschema) 
 
+  def get_dbschema_json_str(self):
+    return json.dumps(self.get_dbschema(), indent=4,sort_keys=True)
+
+  def display_dbschema(self):
+    print(self.get_dbschema_json_str())
 
   #---------- Data Definition Methods ----------------------
 
   def create_table(self, table_name, field_names_types):  
-    """ makes a create command
-    field_names_types should be ordered list of tuples
-    e.g. field_names_types = [('id', 'integer primary key'), 
-         ('ticker', 'text'), ('beta', 'numeric'), 
-         ('price', 'numeric')]
-    if you use 'integer primary key unique' then an idex will be created
+    """ 
+    makes a create command
+
+    field_names_types should be ordered list of tuples [(<name>, <type>),...]
+    note that you can put other information regarding the declaration
+    of a field in the second element of the tuple.
+
+    e.g. field_names_types = [
+          ('id', 'integer primary key autoincrement not null'), 
+          ('ticker', 'text'), ('beta', 'numeric'), 
+          ('price', 'numeric')]
+
+    if you use 'integer primary key autoincrement not null' 
+    then an index will be created
     """
 
     fnt_list = ["%s %s" % (fn, ft) for fn, ft in field_names_types]

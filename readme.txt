@@ -26,7 +26,7 @@ from dbaccessor import DbAccessor
     
     table_name = 'stocks'
     
-    field_names_types = [('id', 'integer primary key unique'), 
+    field_names_types = [('id', 'integer primary key autoincrement not null'), 
          ('ticker', 'text unique'), ('industry','text'),
          ('beta', 'numeric'), 
          ('price', 'numeric')]

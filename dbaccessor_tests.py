@@ -40,7 +40,7 @@ def t_mkinsert(cls, table):
 #----------   Data Definition Tests -------------------------
 
 def t_create_table(db, table_name):
-  field_names_types = [('id', 'integer primary key unique'), 
+  field_names_types = [('id', 'integer primary key autoincrement not null'), 
          ('ticker', 'text unique'), ('industry','text'),
          ('beta', 'numeric'), 
          ('price', 'numeric')]
@@ -66,7 +66,7 @@ def t_create_drop_index(db, table_name):
 
 def print_schema(db):
   print("\n----- display dbschema ---------")
-  print(db.get_dbschema())
+  db.display_dbschema()
   print("\n--------------------------")   
 
 
@@ -120,8 +120,8 @@ def test_db_validator(db):
   invalid_table_name = 'my_misspelled_table_name' 
   invalid_field_name = 'my_misspelled_field_name'
 
-
-  print_schema(db) 
+  print("--------- dbv.display_dbschema()---------------")
+  dbv.display_dbschema()
 
   t_table_name(dbv,valid_table_name) 
   t_table_name(dbv, invalid_table_name) 
@@ -266,6 +266,10 @@ def main():
   table = 'stocks'
 
   db = DbAccessor(dbpath)
+
+  #----------  Display dbschema -----------------
+  print("-----------  dbschema ------------------\n")
+  db.display_dbschema() 
 
   #----------  Make stmt tests -------------------
 
