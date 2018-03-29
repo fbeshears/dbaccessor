@@ -2,13 +2,8 @@ dbaccessor_readme.txt
 
 #A simple sqlite3 accessor class in python
 
-#If you're using python to create and update a sqlite3 database then you may want to check out the DbAccessor class.
-
-#-------------------------------------
-
-#To import the dbaccessor class use this
-
-from dbaccessor import DbAccessor 
+#If you're using python to create and update a sqlite3 database 
+#then you may want to check out the DbAccessor class.
 
 #----------------------------
 
@@ -16,17 +11,25 @@ from dbaccessor import DbAccessor
 
 #To run tests, check out dbaccessor_tests.py
 
-#The class DbAccessor is imported into dbaccessor_tests.py
+
 
 #Tests can be run with:
 
 $ python dbaccessor_tests.py
 
 
+#-------------------------------------
+
+#To import the dbaccessor class use this
+
+from dbaccessor import DbAccessor 
+
+
+
+
 #--------------------
 
 #Here are some specific examples of using DbAccessor
-
 #To create a database called 'definer.db' with a table called 'stocks' use this:
 
     dbpath = 'definer.db'
@@ -42,6 +45,7 @@ $ python dbaccessor_tests.py
     
     db.create_table(table_name, field_names_types)  
     
+#--------------------
 #To create and then drop an index on the 'industry' column of the table do this:
 
   column_name = 'industry'
@@ -50,7 +54,6 @@ $ python dbaccessor_tests.py
   db.drop_index(table_name, column_name)
     
 #-------------------------------
-
 #To insert values into the stocks table use this:
 
     initial_values = [
@@ -64,8 +67,8 @@ $ python dbaccessor_tests.py
 
     
 #---------------------------
-
 #To read those records back use this:
+
     results = db.read(table_name, 
         where_row={'industry':'technology'}, 
         sort_cols=[('industry', 'DESC'), ('ticker', 'ASC')])
@@ -73,7 +76,6 @@ $ python dbaccessor_tests.py
     for row in results: print(row)
 
 #---------------------------
-
 #To update those records use this:
 
   set_row = {'industry': 'finance', 'beta':3.0}
@@ -81,7 +83,6 @@ $ python dbaccessor_tests.py
   db.update(table_name, set_row, where_row)
   
 #---------------------------
-
 #To delete  records use this:  
 
 
@@ -90,14 +91,12 @@ $ python dbaccessor_tests.py
     
 
 #---------------------------------
-
 #To drop a table do this:
 
      db.drop_table(table_name)
      
      
 #---------------------------------
-
 #To close the database connection do this:
 
     db.close()
