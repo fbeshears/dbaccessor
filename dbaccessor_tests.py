@@ -1,5 +1,5 @@
 #dbaccessor_tests.py
-from dbaccessor import DbAccessor
+from dbaccessor import DbAccessor, DbSchemaValidatorError
 
 #--------------  make sql command statements -------
 def t_mkselect(cls, table, columns):
@@ -65,9 +65,76 @@ def t_create_drop_index(db, table_name):
 
 
 def print_schema(db):
-  print("\n----- get_dbschema ---------")
+  print("\n----- display dbschema ---------")
   print(db.get_dbschema())
   print("\n--------------------------")   
+
+
+#-----------  DbSchema Validation Tests ------------------ 
+
+def test_db_validator(db): 
+
+  def t_table_name(dbv, table_name): 
+    print("\n-----------------------")
+    print("is table %s in the dbschema" % table_name) 
+    if dbv.is_table(table_name): 
+      print("table %s is in dbschema" % table_name) 
+    else: 
+      print("table %s is not in dbschema" % table_name)
+
+    print("\n-------------------------\n")
+
+  def t_field_name(dbv, table_name, field_name): 
+    print("\n-----------------------")
+    print("does table %s have field %s " % (table_name, field_name) )
+
+    if dbv.is_field(table_name, field_name): 
+      print("table %s does have field %s" % (table_name, field_name)) 
+    else: 
+      print("table %s does not have field %s" % (table_name, field_name))
+
+    print("\n-------------------------\n")
+
+  def t_does_is_field_crash(dbv,  invalid_table_name, field_name):
+
+    print("------------  try to catch is_field exception ---------------\n")
+    try:
+      dbv.is_field(invalid_table_name, field_name)
+      print("is_field not does catch invalid table_name: %s" % invalid_table_name)
+      print("\n-------------------------\n")
+    except DbSchemaValidatorError as error:
+      print("DbSchemaValidatorError: %s" % error) 
+      print("is_field does catch invalid table_name: %s" % invalid_table_name)
+      print("test recovering without raising error")
+      print("\n-------------------------\n")
+
+  #begin test_db_validator
+  print("\n\n===========================")
+  print("tests of DbSchemaValidator object\n\n")
+
+  dbv = db.get_db_validator() 
+
+  valid_table_name = 'stocks' 
+  valid_field_name = 'ticker'
+
+  invalid_table_name = 'my_misspelled_table_name' 
+  invalid_field_name = 'my_misspelled_field_name'
+
+
+  print_schema(db) 
+
+  t_table_name(dbv,valid_table_name) 
+  t_table_name(dbv, invalid_table_name) 
+
+  t_field_name(dbv, valid_table_name, valid_field_name) 
+  t_field_name(dbv, valid_table_name, invalid_field_name) 
+
+  t_does_is_field_crash(dbv, invalid_table_name, valid_field_name)
+
+
+
+
+
 
 
 #-----------  Data Manipulation Tests --------------------
@@ -202,16 +269,21 @@ def main():
 
   #----------  Make stmt tests -------------------
 
-  test_mk_sql_stmts(db, table)
+  #test_mk_sql_stmts(db, table)
 
   #---------- Data Definition Method tests  ----------------------
 
-  test_data_definitions(db, table)
+  #test_data_definitions(db, table)
+
+
+  #----------- DbValidator object tests ----------------------
+
+  test_db_validator(db)
 
 
   #-----------  Data Manipulation Tests --------------------
 
-  test_data_manipulation(db, table)
+  #test_data_manipulation(db, table)
 
 
   db.close()

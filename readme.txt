@@ -42,7 +42,49 @@ from dbaccessor import DbAccessor
   db.create_index(table_name, column_name)
 
   db.drop_index(table_name, column_name)
+
+#----------------------
+#The DbAccessor object can create a DbSchemaValidator object for testing
+#the validity of table names and field names while your program is
+#running. (Note: this assumes that the structure of the database
+#-- i.e. the data base schema -- does not change while your program
+#is running.)
+
+#This is how one gets a DbSchemaValidator object
+dbv = db.get_db_validator()
+
+#This will return True if 'stocks' is a table in the database
+dbv.is_table('stocks') 
+
+#This will return True if 'stocks' is a table in the database
+#and the stocks table has the field ticker.
+dbv.is_field('stocks','ticker') 
+
+#This will raise an error if the table name does not exist
+dbv.is_field('my_misspelled_table_name', 'ticker')
+
+
+#the dbv object is based on the dbschema when dbv is instantiated. 
+#So, if the database schema is changed (e.g. by dropping a table)
+#then the dbv object will be inconsistent with the database schema.
+
+
+#So, the dbv object will not remain valid if the structure of the
+#database is changed (e.g. if someone has created or dropped tables)
+#while your program is running. If you are the only one using the
+#database, then you should be in control of when tables are created 
+#or dropped.
+
+
+#The moral of the story is to generate a dbv object with get_db_validator,
+#but only use it to validate table and field names just prior to
+#executing CRUD (i.e. insert, read, update, delete) commands.
     
+#Note: checking for valid table and field names is one way to prevent 
+#injection attacks on your code (i.e. when bad guys try to subvert
+#your program if you give them the chance to enter malicious table
+#names or field names).
+
 #-------------------------------
 #To insert values into the stocks table use this:
 

@@ -8,9 +8,38 @@ class DbAccessorError(Exception):
   pass
 
 
+class DbSchemaValidatorError(Exception): 
+  pass
+
+
+class DbSchemaValidator(object):
+  '''
+  This class instantiates a object that can be used to 
+  determine the validity of table_names and field_names.
+  The dbschema instance method is a dictionary. The keys 
+  are valid table names, and the value of a key is an array
+  of valid field_names for that table. Note that the dbschema 
+  can go out-of-date if someone changes the database's schema 
+  by creating or dropping tables, for example.
+  '''
+  def __init__(self, dbschema):
+    self.dbschema = dbschema 
+
+  def is_table(self, table_name): 
+    return table_name in self.dbschema 
+
+  def is_field(self, table_name, field_name): 
+    if not self.is_table(table_name):
+      raise DbSchemaValidatorError("table %s is not in dbschema." % table_name)  
+
+    return field_name in self.dbschema[table_name] 
+
+
+
 class DbAccessor(object):
   '''
-  Class to handle data access 
+  Class to create and execute SQL statements for
+  data definition and data manipulation (CRUD). 
   '''
 
   def __init__(self, dbpath, new_db_ok=True):
@@ -108,7 +137,12 @@ class DbAccessor(object):
     dbschema = {}
     for tn in self.get_table_names(): 
       dbschema[tn] = self.get_field_names(tn)
-    return(dbschema)
+    return(dbschema) 
+
+
+  def get_db_validator(self):
+    dbschema = self.get_dbschema() 
+    return DbSchemaValidator(dbschema) 
 
 
   #---------- Data Definition Methods ----------------------
