@@ -1,5 +1,5 @@
 #dbaccessor_tests.py
-#version 1.0
+from dbaccessor import DbAccessor
 
 #--------------  make sql command statements -------
 def t_mkselect(cls, table, columns):
@@ -160,3 +160,62 @@ def t_no_where_rows(db, table):
   print ("\n---------  select table no where_rows ---------------\n")
   for row in db.read(table): print(row)    
 
+def test_data_definitions(db, table):
+  print_schema(db)
+  print("dropping table %s" % table)
+  db.drop_table(table)
+
+  print_schema(db)
+  t_create_table(db, table)
+  print_schema(db)
+  t_create_drop_index(db, table)
+  print_schema(db)
+
+def test_data_manipulation(db, table):
+  initial_insert(db, table)
+  t_read_insert(db, table)
+  t_no_where_rows(db, table)
+  t_update(db, table)
+  t_delete(db, table)  
+  print("\n\n") 
+
+def test_mk_sql_stmts(db, table):
+  print("\n\n==============  make stmt tests begin ===============\n\n")
+  columns = db.get_field_names(table)
+
+  t_mkselect(DbAccessor, table, columns)
+
+  t_mkupdate(DbAccessor, table)
+
+  t_mkdelete(DbAccessor, table)
+
+  t_mkinsert(DbAccessor, table)
+  print("\n\n==============  make stmt tests end ===============\n\n")
+
+
+def main():
+
+  dbpath = 'definer.db'
+  table = 'stocks'
+
+  db = DbAccessor(dbpath)
+
+  #----------  Make stmt tests -------------------
+
+  test_mk_sql_stmts(db, table)
+
+  #---------- Data Definition Method tests  ----------------------
+
+  test_data_definitions(db, table)
+
+
+  #-----------  Data Manipulation Tests --------------------
+
+  test_data_manipulation(db, table)
+
+
+  db.close()
+
+
+if __name__ == '__main__':
+  main()

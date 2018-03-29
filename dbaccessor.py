@@ -1,7 +1,5 @@
 #dbaccessor.py
 
-
-
 import os
 import sqlite3
 
@@ -33,7 +31,7 @@ class DbAccessor(object):
         raise IOError('Database not found: ' + dbpath)
 
     except Exception as detail:
-        print("Exception: Unable to open db file: ", dbpath, detail)
+        print("Exception: Unable to open db file: " + dbpath + " detail: " + detail)
         raise
 
 
@@ -329,68 +327,3 @@ class DbAccessor(object):
     self.executemany(stmt, values)
 
 
-
-if __name__ == '__main__':
-
-  import dbaccessor_tests as dat 
-
-  def test_data_definitions(db, table):
-    dat.print_schema(db)
-    print("dropping table %s" % table)
-    db.drop_table(table)
-
-    dat.print_schema(db)
-    dat.t_create_table(db, table)
-    dat.print_schema(db)
-    dat.t_create_drop_index(db, table)
-    dat.print_schema(db)
-
-  def test_data_manipulation(db, table):
-    dat.initial_insert(db, table)
-    dat.t_read_insert(db, table)
-    dat.t_no_where_rows(db, table)
-    dat.t_update(db, table)
-    dat.t_delete(db, table)  
-    print("\n\n") 
-
-  def test_mk_sql_stmts(db, table):
-    print("\n\n==============  make stmt tests begin ===============\n\n")
-    columns = db.get_field_names(table)
-
-    dat.t_mkselect(DbAccessor, table, columns)
-
-    dat.t_mkupdate(DbAccessor, table)
-
-    dat.t_mkdelete(DbAccessor, table)
-
-    dat.t_mkinsert(DbAccessor, table)
-    print("\n\n==============  make stmt tests end ===============\n\n")
-
-
-  def main():
-
-    dbpath = 'definer.db'
-    table = 'stocks'
-
-    db = DbAccessor(dbpath)
-
-    #----------  Make stmt tests -------------------
-
-    #test_mk_sql_stmts(db, table)
-
-    #---------- Data Definition Method tests  ----------------------
-
-    test_data_definitions(db, table)
-
-
-    #-----------  Data Manipulation Tests --------------------
-
-    #test_data_manipulation(db, table)
-
-
-    db.close()
-
-
-
-
-  main()
