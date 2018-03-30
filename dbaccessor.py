@@ -161,6 +161,29 @@ class DbAccessor(object):
     cur.close()
     return field_name_type_list
 
+  def get_create_sql(self, table_name):
+    #create sql looks like this
+    #sql = 'CREATE TABLE stocks (id integer primary key autoincrement not null, \
+    #ticker text unique, industry text, beta numeric, price numeric)'
+    rows = self.execute("select sql from sqlite_master where name=?", (table_name, ))
+    sql_list = [row[0] for row in rows]
+    sql = sql_list[0] if len(sql_list) > 0 else None
+    return sql
+
+  def get_field_definition_list(self, sql):
+    if not sql: return list()
+
+    start = sql.find('(')
+    end = sql.find(')')
+    if start == -1 or end == -1: return list()
+
+    match = sql[start+1:end]
+    fdl = match.split(',')
+    fdl = [e.strip() for e in fdl]
+
+    return fdl
+
+
 
   def get_dbschema(self):
     dbschema = {}

@@ -1,6 +1,24 @@
 #dbaccessor_tests.py
 from dbaccessor import DbAccessor, DbSchemaValidatorError
 
+#--------------  test get_field_definition_list -------
+def t_get_field_definition_list(db, table_name):
+  print("\n----------- test get_field_definition_list ----------------\n")
+  sql = db.get_create_sql(table_name)
+  if sql:
+    print("create sql: %s" % sql)
+  else:
+    print("no create sql found for %s: " % table_name)
+
+  fdl = db.get_field_definition_list(sql)
+  if len(fdl) < 1:
+    print("empty field_definition_list")
+  else:
+    print("\nfield_definition_list:")
+    print(fdl)  
+
+  print("\n----------- test get_field_definition_list end ----------------\n")
+
 #--------------  make sql command statements -------
 def t_mkselect(cls, table, columns):
   print("\n----- t_mkselect ----------\n")
@@ -229,13 +247,16 @@ def t_no_where_rows(db, table):
 
 def test_data_definitions(db, table):
   print_schema(db)
+
   print("dropping table %s" % table)
   db.drop_table(table)
 
   print_schema(db)
   t_create_table(db, table)
+
   print_schema(db)
   t_create_drop_index(db, table)
+
   print_schema(db)
 
 def test_data_manipulation(db, table):
@@ -270,6 +291,10 @@ def main():
   #----------  Display dbschema -----------------
   print("-----------  dbschema ------------------\n")
   db.display_dbschema() 
+
+  #----------  field_definition_list -----------------
+  t_get_field_definition_list(db, table)
+
 
   #----------  Make stmt tests -------------------
 
