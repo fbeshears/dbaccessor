@@ -4,10 +4,17 @@ from dbaccessor import DbAccessor, DbSchemaValidatorError
 #--------------  test get_field_definition_list -------
 def t_get_field_definition_list(db, table_name):
   print("\n----------- test get_field_definition_list ----------------\n")
-  sql = db.get_create_sql(table_name)
-  if sql:
-    print("create sql: %s" % sql)
+  create_sql_dict = db.get_create_sql_dict()
+
+  print("create_sql_dict:")
+  print(create_sql_dict)
+  print("-----")
+
+  if table_name in create_sql_dict:
+    sql = create_sql_dict[table_name]
+    print("create sql: %s" % sql )
   else:
+    sql = None
     print("no create sql found for %s: " % table_name)
 
   fdl = db.get_field_definition_list(sql)
@@ -310,7 +317,7 @@ def main():
   test_db_validator(db)
 
 
-  #-----------  Data Manipulation Tests --------------------
+  # #-----------  Data Manipulation Tests --------------------
 
   test_data_manipulation(db, table)
 

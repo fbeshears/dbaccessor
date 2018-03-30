@@ -28,15 +28,28 @@ class DbSchemaValidator(object):
   def __init__(self, dbschema):
     self.dbschema = dbschema 
 
+    table_field_dict = {}
+
+    for table_name in dbschema.keys():
+      field_name_list = [fname_ftype_list[0] for fname_ftype_list in dbschema[table_name]]
+      table_field_dict[table_name] = field_name_list
+
+    self.table_field_dict = table_field_dict
+
+
+
   def is_table(self, table_name): 
     return table_name in self.dbschema 
+
 
   def is_field(self, table_name, field_name): 
     if not self.is_table(table_name):
       raise DbSchemaValidatorError("table %s is not in dbschema." % table_name)  
 
-    field_names = [fnt[0] for fnt in self.dbschema[table_name]]
-    return field_name in field_names 
+    #field_name_list = [fnt[0] for fnt in self.dbschema[table_name]]
+    field_name_list = self.table_field_dict[table_name]
+
+    return field_name in field_name_list 
 
   def get_dbschema_json_str(self):
     return json.dumps(self.dbschema, indent=4,sort_keys=True)
@@ -131,7 +144,7 @@ class DbAccessor(object):
 
   def get_table_names(self):
     rows = self.execute("select name from sqlite_master where type = 'table' ")
-    return [row[0] for row in rows if row[0] != 'sqlite_sequence']
+    return [row[0] for row in rows]
 
 
   def get_index_names(self):
@@ -161,14 +174,22 @@ class DbAccessor(object):
     cur.close()
     return field_name_type_list
 
-  def get_create_sql(self, table_name):
-    #create sql looks like this
-    #sql = 'CREATE TABLE stocks (id integer primary key autoincrement not null, \
+  def get_create_sql_dict(self):
+    #returns dict in this form:
+    # {<table_name>: <create_sql_stmt, ...}
+    #create_sql_stmt looks like this
+    #create_sql_stmt = 'CREATE TABLE stocks (id integer primary key autoincrement not null, \
     #ticker text unique, industry text, beta numeric, price numeric)'
-    rows = self.execute("select sql from sqlite_master where name=?", (table_name, ))
-    sql_list = [row[0] for row in rows]
-    sql = sql_list[0] if len(sql_list) > 0 else None
-    return sql
+    rows = self.execute("select name, sql from sqlite_master where type='table'")
+
+    create_sql_dict = {}
+    for row in rows:
+      table_name = row[0]
+      sql_create = row[1]
+      create_sql_dict[table_name] = sql_create 
+
+
+    return create_sql_dict
 
   def get_field_definition_list(self, sql):
     if not sql: return list()
