@@ -292,107 +292,119 @@ class DbAccessor(object):
 
   #---------  Data Access Methods (CRUD) -------------------
 
-
+  @staticmethod
+  def get_dict_kv_lists(dict_table):
+    klst, vlst = [],[]
+    for k,v in dict_table.items():
+      klst.append(k)
+      vlst.append(v)
+    return(klst, vlst)    
 
   @staticmethod
-  def mkupdate(table, set_row, where_row):
+  def mkupdate(table, set_row, where_row_list):
 
-    def get_lists(dict_table):
-      klst, vlst = [],[]
-      for k,v in dict_table.items():
-        klst.append(k)
-        vlst.append(v)
-      return(klst, vlst)
-
-    (set_key_list, set_value_list) = get_lists(set_row)
-    (where_key_list, where_value_list) = get_lists(where_row)
-
-    value_list = set_value_list
-    value_list.extend(where_value_list)
+    (set_key_list, value_list) = DbAccessor.get_dict_kv_lists(set_row)
 
 
     stmt = 'UPDATE ' + table + " \n"
     stmt += "SET "
     stmt += ', '.join([k + ' = ' + '?'  for k in set_key_list])
-    stmt += "\nWHERE "
-    stmt += "\n AND ".join([k + ' = ' + '?'  for k in where_key_list])
+
+    (where_clause, where_value_list) = DbAccessor.mk_where_clause(where_row_list)
+    stmt += where_clause
     stmt += ";"
+
+    value_list.extend(where_value_list)
 
     return(stmt, value_list)
 
 
-  def update(self, table, set_row, where_row):
-    (stmt, value_list) = DbAccessor.mkupdate(table, set_row, where_row)
+  def update(self, table, set_row, where_row_list):
+    (stmt, value_list) = DbAccessor.mkupdate(table, set_row, where_row_list)
     self.execute( stmt, value_list )
 
 
+  @staticmethod 
+  def mk_where_clause(where_row_list):
+    valid_comp_op = ('=', '>', '<', '>=', '<=', '!=', '<>')
+    #where_row_list structure
+    #[('industry', '=', 'technology'), ('beta', '>', 1.0), ...]
+
+    if not where_row_list:
+      where_clause = ""
+      value_list = []
+
+    else:
+        for col in where_row_list:
+          if col[1] not in valid_comp_op:
+            raise DbAccessorError('bad compariso operator: %s' % col[1])
+
+          if len(col) != 3:
+            raise DbAccessorError('column tuple length not equal 3')
+
+        where_clause = "\nWHERE "
+        where_clause += "\n  AND ".join(["%s %s ?" % (col[0], col[1])  for col in where_row_list])
+
+        value_list = [col[2] for col in where_row_list]
+
+    return where_clause, value_list
 
   @staticmethod
-  def mkdelete(table, where_row):
+  def mkdelete(table, where_row_list):
     stmt = "DELETE FROM " + table
 
-    if where_row:
-      stmt += "\nWHERE "
-      stmt += "\n  AND ".join([col + "=:" + col for col in where_row.keys()])
-      stmt += ';'
+    (where_clause, value_list) = DbAccessor.mk_where_clause(where_row_list)
+    stmt += where_clause
+    stmt += ";"
   
-    return(stmt)
+    return stmt, value_list 
 
 
-  def delete(self, table, where_row=None):
-    stmt = DbAccessor.mkdelete(table, where_row)
-    self.execute(stmt,where_row)
+  def delete(self, table, where_row_list=None):
+    (stmt, value_list) = DbAccessor.mkdelete(table, where_row_list)
+    self.execute(stmt,value_list)
 
 
 
   @staticmethod
-  def mkselect(table, columns=None, where_row=None, sort_cols=None):
+  def mkselect(table, columns=None, where_row_list=None, sort_cols=None):
+
+    vaild_sort_op = ('ASC', 'DESC')
+
+    stmt = 'SELECT '
+    if columns:
+        stmt += ', '.join(columns)
+    else:
+        stmt += '*'
+
+    # from clause
+    stmt += "\nFROM " + table
+
+    (where_clause, value_list) = DbAccessor.mk_where_clause(where_row_list)
+    stmt += where_clause
 
 
-      stmt = 'SELECT '
-      if columns:
-          stmt += ', '.join(columns)
-      else:
-          stmt += '*'
+    # order clause
+    # sort_cols = [('name_last', 'ASC'), ('age', 'DESC')]
+    if sort_cols:
+      sort_list = []
+      for col_name, sort_type in sort_cols: 
+        if not sort_type.upper() in vaild_sort_op:
+          raise DbAccessorError('bad sort type %s' % sort_type)
+        else:
+          sort_list.append(col_name + ' ' + sort_type)
 
-      # from clause
-      stmt += "\nFROM " + table
+      stmt += "\nORDER BY "
+      stmt += ', '.join(sort_list)
 
-      #------------------------------
-      #where clause formatting
-      #where_rows =  {"who": 'beshears', "age": 65}
-      #
-      #This is the named style (note db columns don't have to match dict keys)
-      #
-      #cur.execute("select * from people where name_last=:who and age=:age", where_rows)
-      #
-      #-----------------------------
+    stmt += ';'
+
+    return stmt, value_list
 
 
-      if where_row:
-          stmt += "\nWHERE "
-          stmt += "\n  AND ".join([col + "=:" + col for col in where_row.keys()])
-
-      # order clause
-      # sort_cols = [('name_last', 'ASC'), ('age', 'DESC')]
-      if sort_cols:
-        sort_list = []
-        for col_name, sort_type in sort_cols: 
-          if not sort_type.upper() in ['ASC', 'DESC']:
-            raise DbAccessorError('bad sort type')
-          else:
-            sort_list.append(col_name + ' ' + sort_type)
-
-        stmt += "\nORDER BY "
-        stmt += ', '.join(sort_list)
-
-      stmt += ';'
 
 
-      return stmt
-
-
-  def read(self, table, columns=None, where_row=None, sort_cols=None):
+  def read(self, table, columns=None, where_row_list=None, sort_cols=None):
     '''
     Executes a SELECT statement against table.
 
@@ -401,10 +413,15 @@ class DbAccessor(object):
 
     columns (optional)    -- list of columns to be read from table
 
-    where_row (optional)  -- dict used to build WHERE clause
-                            stmt='select * from stocks where industry=:industry'
-                            where_row={'industry':'technology'}
-                            cur.execute(stmt, where_row)
+    where_row_list (optional)  -- list used to build WHERE clause
+                            where_row_list=[('industry', '=', 'technology'), ('beta', '<', 1.0)]
+
+                            These two arguments will be created from where_row:
+                            stmt='select * from stocks where industry = ?, beta > ?'
+                            value_list = ['technology', 1.0]
+
+                            They will be executed with:
+                            cur.execute(stmt, value_list)
 
     sort_cols (optional)  -- list of (column, order) pairs
                           used to specify order of the
@@ -426,9 +443,9 @@ class DbAccessor(object):
 
     if not columns: columns = self.get_field_names(table)
 
-    stmt = DbAccessor.mkselect(table, columns, where_row, sort_cols)
+    (stmt, value_list) = DbAccessor.mkselect(table, columns, where_row_list, sort_cols)
 
-    tuple_row_list = self.execute(stmt, where_row)
+    tuple_row_list = self.execute(stmt, value_list)
 
     result_list = [dict(zip(columns, trow)) for trow in tuple_row_list]
 

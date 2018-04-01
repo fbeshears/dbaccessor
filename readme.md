@@ -32,9 +32,9 @@ Main DbAccessor data definition methods:
 
 Main DbAccessor data manipulation methods (CRUD):
 * insert(table_name, values)
-* read(table_name, columns, where_row, sort_cols)
-* update(table_name, set_row, where_row)
-* delete(table_name, where_row)
+* read(table_name, columns, where_row_list, sort_cols)
+* update(table_name, set_row, where_row_list)
+* delete(table_name, where_row_list)
 
 ```python
 #Create and then drop an index on the 'industry' column:
@@ -62,10 +62,10 @@ db.insert(table_name, initial_values)
 #Read print records
 
 columns = None
-where_row = {'industry':'technology'}
+where_row_list = [('industry', '=', 'technology')]
 sort_cols = [('industry', 'DESC'), ('ticker', 'ASC')]
 
-results = db.read(table_name, columns, where_row, sort_cols)
+results = db.read(table_name, columns, where_row_list, sort_cols)
 
 #Print records (each record is a dict)
 for row in results: 
@@ -76,9 +76,9 @@ for row in results:
 #Update a record
 
 set_row = {'industry': 'finance', 'beta':3.0}
-where_row = {'ticker': 'ibm'}
+where_row_list = [('ticker', '=', 'ibm')]
 
-db.update(table_name, set_row, where_row)
+db.update(table_name, set_row, where_row_list)
 
 ```
 
@@ -86,8 +86,8 @@ db.update(table_name, set_row, where_row)
 #Delete a record
 
 
-where_row = {'ticker': 'ibm'}
-db.delete(table_name, where_row)
+where_row_list = [('ticker', '=', 'ibm')]
+db.delete(table_name, where_row_list)
 ```
 
 

@@ -30,24 +30,27 @@ def t_get_field_definition_list(db, table_name):
 def t_mkselect(cls, table, columns):
   print("\n----- t_mkselect ----------\n")
   sort_cols = [('ticker', 'ASC'), ('age', 'DESC')]
-  where_row = {'ticker': 'ibm', 'industry': 'technology'}
-  stmt = cls.mkselect(table, columns, where_row, sort_cols)
+  where_row_list = [('ticker', '=', 'ibm'), ('industry', '=', 'technology')]
+  (stmt, value_list) = cls.mkselect(table, columns, where_row_list, sort_cols)
   print("t_mkselect SQL:\n" + stmt )
+  print("value_list:")
+  print(value_list)
 
 
 def t_mkupdate(cls, table):
   print("\n----- t_mkupdate ----------\n")
   set_row = {'industry': 'finance', 'beta':3.0}
-  where_row = {'ticker': 'ibm', 'industry': 'technology'}
-  (stmt, value_list) = cls.mkupdate(table, set_row, where_row)
+  where_row_list = [('ticker', '=', 'ibm'), ('industry', '=', 'technology')]
+  (stmt, value_list) = cls.mkupdate(table, set_row, where_row_list)
   print("t_mkupdate SQL:\n" + stmt)
   print("value_list: \n", value_list)
 
 def t_mkdelete(cls, table):
   print("\n----- t_mkdelete ----------\n")
-  where_row = {'ticker': 'ibm', 'industry': 'technology'}
-  stmt = cls.mkdelete(table, where_row)
+  where_row_list = [('ticker', '=', 'ibm'), ('industry', '=', 'technology')]
+  (stmt, value_list) = cls.mkdelete(table, where_row_list)
   print("t_mkdelete SQL:\n" + stmt)
+  print("value_list: \n", value_list)
 
 def t_mkinsert(cls, table):
   print("\n----- t_mkinsert ----------\n")
@@ -203,7 +206,7 @@ def t_read_insert(db, table):
 
   print ("\n---------  table where industry='technology' -------------\n")
   results = db.read(table, 
-    where_row={'industry':'technology'}, 
+    where_row_list=[('industry', '=', 'technology')], 
     sort_cols=[('industry', 'DESC'), ('ticker', 'ASC')])
 
   for row in results: print(row)
@@ -234,15 +237,15 @@ def t_read_insert(db, table):
 
 def t_update(db, table):
   set_row = {'industry': 'finance', 'beta':3.0}
-  where_row = {'ticker': 'ibm'}
-  db.update(table, set_row, where_row)
+  where_row_list = [('ticker', '=', 'ibm')]
+  db.update(table, set_row, where_row_list)
 
   db.display_table(table,"table with ibm updates")
 
 
 def t_delete(db, table):
-  where_row = {'ticker': 'ibm'}
-  db.delete(table, where_row)
+  where_row_list = [('ticker', '=', 'ibm')]
+  db.delete(table, where_row_list)
 
   db.display_table(table,"updated table after deleting ibm")
 
