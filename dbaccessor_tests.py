@@ -293,12 +293,25 @@ def main():
   dbpath = 'definer.db'
   table = 'stocks'
 
-  db = DbAccessor(dbpath)
+  #default key word arguments are:  new_db_ok=True  and verbose=False 
+
+  # db = DbAccessor(dbpath)  # will assume that the object will not make print stmts
+  # db = DbAccessor(dbpath, verbose=False) #same as the default
+
+  #In testing mode you may want all print statements 
+  #Note that when dbaccessor hits an exception, it always raises it.
+
+  db = DbAccessor(dbpath, new_db_ok=True, verbose=False)
 
   #----------  Display dbschema -----------------
   print("-----------  dbschema ------------------\n")
   db.display_dbschema() 
 
+  #---------- Data Definition Method tests  ----------------------
+
+  test_data_definitions(db, table)
+
+  
   #----------  field_definition_list -----------------
   t_get_field_definition_list(db, table)
 
@@ -307,9 +320,7 @@ def main():
 
   test_mk_sql_stmts(db, table)
 
-  #---------- Data Definition Method tests  ----------------------
 
-  test_data_definitions(db, table)
 
 
   #----------- DbValidator object tests ----------------------

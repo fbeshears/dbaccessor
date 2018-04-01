@@ -68,27 +68,42 @@ class DbAccessor(object):
   data definition and data manipulation (CRUD). 
   '''
 
-  def __init__(self, dbpath, new_db_ok=True):
+  def __init__(self, dbpath, **kwargs):
 
-    def init_db(self, dbpath):
-      self.dbpath = dbpath
-      self.conn = sqlite3.connect(dbpath)   
-        
+    self.dbpath = dbpath
+
+    if not kwargs: kwargs = {}
+
+    default_dict = {'new_db_ok': True, 'verbose': False}
+    for k,v in default_dict.items():
+      self.__dict__[k] = v if k not in kwargs else kwargs[k]
+
+
     try:
 
-      if new_db_ok:
-        init_db(self, dbpath)
+      if self.new_db_ok:
+        self.conn = sqlite3.connect(self.dbpath)
 
-      elif os.path.exists(dbpath):
-        init_db(self, dbpath)
+      elif os.path.exists(self.dbpath):
+        self.conn = sqlite3.connect(self.dbpath)
 
       else:
-        raise IOError('Database not found: ' + dbpath)
+        raise IOError('Database not found: ' + self.dbpath)
 
     except Exception as detail:
-        print("Exception: Unable to open db file: " + dbpath + " detail: " + detail)
+        self.vprint("Exception: Unable to open db file: ", self.dbpath, " detail: ", detail)
         raise
 
+
+
+
+
+
+  def vprint(self, *args):
+    if self.verbose:
+      pstr = ""
+      for s in args: pstr += str(s) 
+      print(s) 
 
 
   def close(self):
@@ -118,22 +133,22 @@ class DbAccessor(object):
         result = execute(stmt, params)
 
     except sqlite3.OperationalError as error:
-      print("execute sqlite OperationalError: ", error)
+      self.vprint("execute sqlite OperationalError: ", error)
       raise
     except sqlite3.DatabaseError as error:
-      print("execute sqlite DatabaseError: ", error)
+      self.vprint("execute sqlite DatabaseError: ", error)
       raise
     except sqlite3.IntegrityError as error:
-      print("execute sqlite IntegrityError: ", error)
+      self.vprint("execute sqlite IntegrityError: ", error)
       raise
     except sqlite3.ProgrammingError as error:
-      print("execute sqlite ProgrammingError: ", error)
+      self.vprint("execute sqlite ProgrammingError: ", error)
       raise
     except sqlite3.Error as error:
-      print("execute sqlite Error: ", error)
+      self.vprint("execute sqlite Error: ", error)
       raise
     except Exception as error:
-      print("execute Exception Error: ", error)
+      self.vprint("execute Exception Error: ", error)
       raise
 
     return(result)
@@ -401,8 +416,13 @@ class DbAccessor(object):
 
 
     #Possible error checks: 
-    # 1. check to see if sort column names are in 
-    #    the field names for the table in the database
+    # check to see if sort column names are in 
+    # the field names for the table in the database
+    #
+    # Solution: make it possible for dbaccessor's user 
+    # to create a data base validator object.
+    #
+    # See class: DbSchemaValidator
 
     if not columns: columns = self.get_field_names(table)
 
