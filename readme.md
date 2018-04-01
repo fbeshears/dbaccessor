@@ -4,7 +4,7 @@ A simple sqlite3 database accessor class written in python.
 
 
 ```python
-from dbaccessor import DbAccessor, DbSchemaValidator
+from dbaccessor import DbAccessor
 
 dbpath = 'definer.db'
 db = DbAccessor(dbpath)
