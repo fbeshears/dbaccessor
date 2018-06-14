@@ -153,6 +153,14 @@ class DbAccessor(object):
 
     return(result)
 
+  def get_row_list_with_execute(self, stmt, params=[]):
+    result = self.execute(stmt, params)
+    return [row for row in result]
+
+  def get_row_list_with_executemany(self, stmt, params=[]):
+    result = self.executemany(stmt, params)
+    return [row for row in result]
+
 
 
   #---------- Schema Examination Methods -------------------
